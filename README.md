@@ -15,8 +15,14 @@ Important changes are made in the rsseval/rss folder.
 - Dataset, Models and Utils: MoCo components (arguments, feature extraction) were added to get_backbone and the KandDPL class.
 
 ## Running
-###Training:
+### Pretraining:
 - A pretrained MoCo model is provided in [link](https://1drv.ms/u/c/73bae07ce4f6ca55/EcR0W17g8F9Irwxqt221TkkBvPV_XPY3FMmQm6W75pfuDA?e=Dctx0A). It is trained on the y label (not concepts) of the original Kandinsky dataset (Marconato et al., 2024) for 1000 epochs.
+
+### Training:
+- All 03 variations of KandDPL (with/without MoCo untrained/pretrained encoder) are trained on five seeds [123, 456, 789, 1012, 1213], on 10 epochs.
+
+### Testing:
+- Models are evaluated using the script ```rsseval/rss/evaluate.py``` on the original metrics. The exception are the "hard" metrics which have not been fully implemented. 
 
 
 ## References
