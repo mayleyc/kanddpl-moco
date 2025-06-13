@@ -17,7 +17,7 @@ for model in get_all_models():
     names[model] = getattr(mod, class_name)
 
 
-def get_model(args, encoder, decoder, n_images, c_split):
+def get_model(args, encoder, decoder, n_images, c_split, moco, moco_pretrained):
     if args.model == "cext":
         return names[args.model](encoder, n_images=n_images, c_split=c_split)
     elif args.model in [
@@ -55,7 +55,8 @@ def get_model(args, encoder, decoder, n_images, c_split):
         "mnmathdpl"
     ]:
         return names[args.model](
-            encoder, n_images=n_images, c_split=c_split, args=args
+            encoder, n_images=n_images, c_split=c_split, moco=moco,
+            moco_pretrained=moco_pretrained, args=args
         )  # only discriminative
     else:
         return names[args.model](

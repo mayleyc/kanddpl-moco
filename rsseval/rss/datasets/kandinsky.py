@@ -4,13 +4,21 @@ from backbones.disent_encoder_decoder import DecoderConv64, EncoderConv64
 from backbones.resnet import ResNetEncoder
 from backbones.kandcnn_single import KANDCNNSingle
 from backbones.kandcnn import KANDCNN
+#from backbones import moco
 from argparse import Namespace
 import time
 import numpy as np
 import os
 import torch
+from backbones.moco.builder import MoCo_ViT
+from backbones import vits
+from functools import partial
 
+model_moco = MoCo_ViT(
+            partial(vits.__dict__["vit_conv_small"], stop_grad_conv1=True),
+            256, 4096, 1)
 
+base_path = "/mnt/cimec-storage6/users/nguyenanhthu.tran/2025study/mnist-moco/rsbench-code/rsseval/rss/data/kandinsky-3k-original"
 class Kandinsky(BaseDataset):
     NAME = "kandinsky"
 
@@ -18,18 +26,18 @@ class Kandinsky(BaseDataset):
         start = time.time()
 
         self.dataset_train = KAND_Dataset(
-            base_path="data/kandinsky-3k-original",
+            base_path=base_path,
             split="train",
             preprocess=self.args.preprocess,
             finetuning=False,
         )
         self.dataset_val = KAND_Dataset(
-            base_path="data/kandinsky-3k-original",
+            base_path=base_path,
             split="val",
             preprocess=self.args.preprocess,
         )
         self.dataset_test = KAND_Dataset(
-            base_path="data/kandinsky-3k-original",
+            base_path=base_path,
             split="test",
             preprocess=self.args.preprocess,
         )
@@ -66,9 +74,47 @@ class Kandinsky(BaseDataset):
 
         return train_loader, val_loader, test_loader
 
-    def get_backbone(self, args=None):
+    def get_backbone_old(self, args=None):
         print("kand says", self.args, args)
+        '''if self.args.moco:
+            return moco.encoder, DecoderConv64(x_shape=(3, 64, 64), z_size=18, z_multiplier=2)
+        el'''
         if self.args.preprocess:
+            return ResNetEncoder(z_dim=18, z_multiplier=2), DecoderConv64(
+                x_shape=(3, 64, 64), z_size=18, z_multiplier=2
+            )
+        else:
+
+            if self.args.backbone == "neural":
+                # if self.args.joint:
+                #     return KANDCNN(), None
+                # else:
+                #     return DisjointKANDCNN(n_images=self.get_split()[0]), None
+
+                if self.args.joint:
+                    return KANDCNN(), None
+                else:
+                    return KANDCNNSingle(n_images=self.get_split()[0]), None
+
+            return EncoderConv64(
+                x_shape=(3, 64, 64), z_size=18, z_multiplier=2
+            ), DecoderConv64(x_shape=(3, 64, 64), z_size=18, z_multiplier=2)
+        
+    def get_backbone(self, args=None):
+        args = args if args is not None else self.args
+        print("kand says", self.args, args)
+        if args.moco_pretrained:
+            checkpoint = torch.load("backbones/model_best.pth.tar", map_location="cpu")
+            model_moco.load_state_dict(checkpoint["state_dict"], strict=False)
+            model_moco.eval()
+        else:
+            pass
+
+        if args.moco or args.moco_pretrained:
+            return model_moco.base_encoder, DecoderConv64(
+                x_shape=(3, 64, 64), z_size=18, z_multiplier=2
+            )
+        elif self.args.preprocess:
             return ResNetEncoder(z_dim=18, z_multiplier=2), DecoderConv64(
                 x_shape=(3, 64, 64), z_size=18, z_multiplier=2
             )

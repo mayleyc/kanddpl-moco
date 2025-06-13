@@ -57,7 +57,7 @@ class KAND_Dataset(torch.utils.data.Dataset):
 
         # collecting images
         self.list_images = glob.glob(
-            os.path.join(self.base_path, self.split, "images", "*")
+            os.path.join(self.base_path, self.split, "images", "*.png")
         )
         self.img_number = [i for i in range(len(self.list_images))]
 

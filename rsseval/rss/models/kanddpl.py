@@ -38,6 +38,8 @@ class KandDPL(DeepProblogModel):
         model_dict=None,
         n_facts=20,
         nr_classes=19,
+        moco=False, 
+        moco_pretrained=False
     ):
         """Initialize method
 
@@ -79,6 +81,11 @@ class KandDPL(DeepProblogModel):
         self.device = get_device()
         self.w_q = self.w_q.to(self.device)
         self.and_rule = self.and_rule.to(self.device)
+        
+        # Store moco flags as attributes
+        self.moco = moco
+        self.moco_pretrained = moco_pretrained
+        
 
     def forward(self, x, activate_simple_concepts=False):
         """Forward method
@@ -92,6 +99,7 @@ class KandDPL(DeepProblogModel):
             c: simple concepts
             out_dict: output dictionary
         """
+        #print(f"Input shape: {x.shape}")
         if activate_simple_concepts:
             self.encoder.return_simple_concepts = True
             logits = []
@@ -106,12 +114,20 @@ class KandDPL(DeepProblogModel):
         # Image encoding
         cs, pCs, preds = [], [], []
         xs = torch.split(x, x.size(-1) // self.n_images, dim=-1)
+        # xs = torch.split(x, x.size(-1) // self.n_images, dim=-1)  # originally -1, but changed to 3 since 3 imgs are packed together
         for i in range(self.n_images):
-            lc, _ = self.encoder(xs[i])  # sizes are ok
+            #print(f"xs[{i}].shape = {xs[i].shape}") #xs[0].shape = torch.Size([64, 3, 64, 64])
+            if self.moco or self.moco_pretrained:
+                features = self.encoder(xs[i])  # sizes are ok
+                lc = features[0] if isinstance(features, tuple) else features
+            else:
+                lc, _ = self.encoder(xs[i])  # sizes are ok
 
             pc = self.normalize_concepts(lc)
 
             pred, worlds_prob = self.problog_inference(pc)
+            
+
 
             cs.append(lc), pCs.append(pc), preds.append(pred)
 

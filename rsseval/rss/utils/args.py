@@ -14,6 +14,12 @@ def add_experiment_args(parser: ArgumentParser) -> None:
     Returns:
         None: This function does not return a value.
     """
+    #mocov3
+    parser.add_argument(
+        "--moco", 
+        action="store_true", 
+        help="Use MoCo v3 as encoder")
+
     # dataset
     parser.add_argument(
         "--dataset",

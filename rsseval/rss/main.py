@@ -68,7 +68,7 @@ def register_termination_handlers():
     signal.signal(signal.SIGTERM, __handle_signal)
 
 
-def parse_args():
+def parse_args_old():
     """Parse command line arguments
 
     Returns:
@@ -89,7 +89,16 @@ def parse_args():
         action="store_true",
         help="Loads the best arguments for each method, " "dataset and memory buffer.",
     )
-
+    parser.add_argument(
+        "--moco",
+        action="store_true",
+        help="loads moco base encoder for kanddpl",
+    )
+    parser.add_argument(
+        "--moco-pretrained",
+        action="store_true",
+        help="loads moco base encoder, pretrained on kanddpl",
+    )
     torch.set_num_threads(4)
 
     add_management_args(parser)
@@ -110,6 +119,68 @@ def parse_args():
 
     return args
 
+def parse_args():
+    """Parse command line arguments
+
+    Returns:
+        args: parsed command line arguments
+    """
+    base_parser = argparse.ArgumentParser(
+        description="Reasoning Shortcut", allow_abbrev=False
+    )
+
+    base_parser.add_argument(
+        "--model",
+        type=str,
+        default="cext",
+        help="Model for inference.",
+        choices=get_all_models(),
+    )
+    base_parser.add_argument(
+        "--load_best_args",
+        action="store_true",
+        help="Loads the best arguments for each method, dataset and memory buffer.",
+    )
+    base_parser.add_argument(
+        "--moco",
+        action="store_true",
+        help="loads moco base encoder for kanddpl",
+    )
+    base_parser.add_argument(
+        "--moco-pretrained",
+        action="store_true",
+        help="loads moco base encoder, pretrained on kanddpl",
+    )
+
+    torch.set_num_threads(4)
+
+    add_management_args(base_parser)
+
+    # Parse preliminary args to load model-specific parser
+    partial_args, _ = base_parser.parse_known_args()
+    mod = importlib.import_module("models." + partial_args.model)
+
+    # Load model-specific parser
+    get_parser = getattr(mod, "get_parser")
+    model_parser = get_parser()
+
+    # Merge base parser actions into model parser
+    for action in base_parser._actions:
+        if not any(a.option_strings == action.option_strings for a in model_parser._actions):
+            model_parser._add_action(action)
+
+    model_parser.add_argument(
+        "--project", type=str, default="Reasoning-Shortcuts", help="wandb project"
+    )
+    add_test_args(model_parser)
+
+    # Final parsed args
+    args = model_parser.parse_args()
+
+    # Set random seed
+    set_random_seed(args.seed) if args.seed is not None else set_random_seed(42)
+
+    return args
 
 def tune(args):
     """
@@ -185,7 +256,7 @@ def main(args):
         # Load dataset, model, loss, and optimizer
         encoder, decoder = dataset.get_backbone()
         n_images, c_split = dataset.get_split()
-        model = get_model(args, encoder, decoder, n_images, c_split)
+        model = get_model(args, encoder, decoder, n_images, c_split, moco=args.moco, moco_pretrained=args.moco_pretrained)
         loss = model.get_loss(args)
         model.start_optim(args)
 

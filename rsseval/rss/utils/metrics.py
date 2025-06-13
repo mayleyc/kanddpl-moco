@@ -139,7 +139,7 @@ def evaluate_metrics(
             y_pred = out_dict["YS"].detach().cpu().numpy()
             c_pred = out_dict["CS"].detach().cpu().numpy()
             pc_pred = out_dict["pCS"].detach().cpu().numpy()
-            if args.dataset in ["minikandinsky", "clipkandinksy"]:
+            if args.dataset in ["minikandinsky", "clipkandinsky"]:
                 pc_pred = pc_pred.reshape(pc_pred.shape[0], pc_pred.shape[1], 18)
         elif last and i > 0:
             y_true = np.concatenate([y_true, labels.detach().cpu().numpy()], axis=0)
