@@ -11,7 +11,8 @@ For more info, go to the dedicated website: [link](https://unitn-sml.github.io/r
 ## Content Overview
 Most changes occur in the rsseval/rss folder.
 
-- Backbones: MoCo files were added from [link](https://github.com/facebookresearch/moco-v3/tree/main/moco).  
+- Backbones: MoCo files were added from [link](https://github.com/facebookresearch/moco-v3/tree/main/moco). Unzip the trained MoCo checkpoint from [link](https://1drv.ms/u/c/73bae07ce4f6ca55/EcR0W17g8F9Irwxqt221TkkBvPV_XPY3FMmQm6W75pfuDA?e=Dctx0A) and place the checkpoint in
+``` kanddpl-moco/rsseval/rss/backbones/ ```
 
 
 
