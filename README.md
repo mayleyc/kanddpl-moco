@@ -9,6 +9,9 @@ This is adapted from the official codebase for ["A Neuro-Symbolic Benchmark Suit
 For more info, go to the dedicated website: [link](https://unitn-sml.github.io/rsbench/).
 
 ## Content Overview
+Most changes occur in the rsseval/rss folder.
+
+- Backbones: MoCo files were added from [link](https://github.com/facebookresearch/moco-v3/tree/main/moco).  
 
 
 
