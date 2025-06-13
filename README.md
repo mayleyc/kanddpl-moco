@@ -16,7 +16,7 @@ Important changes are made in the rsseval/rss folder.
 
 ## Running
 ###Training:
-- A pretrained MoCo model on 1000 epochs is provided in [link](https://1drv.ms/u/c/73bae07ce4f6ca55/EcR0W17g8F9Irwxqt221TkkBvPV_XPY3FMmQm6W75pfuDA?e=Dctx0A). It is trained on the y label (not concepts) of the original Kandinsky dataset (Marconato et al., 2024) for 1000 epochs.
+- A pretrained MoCo model is provided in [link](https://1drv.ms/u/c/73bae07ce4f6ca55/EcR0W17g8F9Irwxqt221TkkBvPV_XPY3FMmQm6W75pfuDA?e=Dctx0A). It is trained on the y label (not concepts) of the original Kandinsky dataset (Marconato et al., 2024) for 1000 epochs.
 
 
 ## References
