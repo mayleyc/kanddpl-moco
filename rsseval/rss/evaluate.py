@@ -15,14 +15,6 @@ Evaluate the metrics In and Out of Distribution for SDDOIA & Co
 import torch
 from sklearn.metrics import accuracy_score, f1_score
 from tqdm import tqdm
-import sys
-'''
-sys.path.append("../")
-sys.path.append("/content/drive/MyDrive/Colab Notebooks/MLNLP2/rsbench-code/rsseval")
-sys.path.append("/content/drive/MyDrive/Colab Notebooks/MLNLP2/rsbench-code/rssgen")
-'''
-sys.path.append("/content/drive/MyDrive/Colab Notebooks/MLNLP2/rsbench-code/rsseval/rss/")
-
 
 from utils.train import convert_to_categories, compute_coverage #, compute_coverage_hard
 from datasets.boia import BOIA
@@ -51,12 +43,15 @@ from models.kanddpl import KandDPL
 from models.kandcbm import KandCBM
 from models.kandltn import KANDltn
 from models.kandnn import KANDnn
+from datasets.kandinsky import model_moco
 from sklearn.metrics import confusion_matrix
 from argparse import Namespace
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
+import pandas as pd
+from datetime import datetime
 
 """#Train and evaluate
 
@@ -153,14 +148,14 @@ class KandMetrics(Metrics):
         label_f1_micro,
         label_f1_weighted,
         collapse,
-        collapse_hard,
         avg_nll,
+        #collapse_hard=None,
         collapse_shapes,
-        collapse_hard_shapes,
+        #collapse_hard_shapes=None,
         collapse_color,
-        collapse_hard_color,
+        #collapse_hard_color=None,
         mean_collapse,
-        mean_collapse_hard,
+        #mean_collapse_hard=None,
     ):
         super(KandMetrics, self).__init__(
             concept_accuracy,
@@ -172,15 +167,15 @@ class KandMetrics(Metrics):
             label_f1_micro,
             label_f1_weighted,
             collapse,
-            collapse_hard,
             avg_nll,
         )
+        #self.collapse_hard = collapse_hard
         self.collapse_shapes = collapse_shapes
-        self.collapse_hard_shapes = collapse_hard_shapes
+        #self.collapse_hard_shapes = collapse_hard_shapes
         self.collapse_color = collapse_color
-        self.collapse_hard_color = collapse_hard_color
+        #self.collapse_hard_color = collapse_hard_color
         self.mean_collapse = mean_collapse
-        self.mean_collapse_hard = mean_collapse_hard
+        #self.mean_collapse_hard = mean_collapse_hard
 
 """Function used to compute the concept collapse"""
 
@@ -227,9 +222,14 @@ def plot_confusion_matrix(
         cm = cm.astype("float")
         row_sums = cm.sum(axis=1)[:, np.newaxis]
         cm = np.where(row_sums == 0, 0, cm / row_sums)
+        #row_sums_safe = np.where(row_sums == 0, 1, row_sums)
+        #cm = cm / row_sums_safe[:, None]
+        #cm[(row_sums == 0).flatten(), :] = 0
+        #cm = np.where(row_sums[:, 0] == 0, 0, cm / row_sums)
+
 
     plt.figure(figsize=(8, 6))
-    sns.set(font_scale=1.8)
+    sns.set_theme(font_scale=1.8)
     red_yellow_palette = sns.color_palette("OrRd", as_cmap=True)
     sns.heatmap(
         cm,
@@ -241,11 +241,24 @@ def plot_confusion_matrix(
         yticklabels=classes,
     )
     if title:
-        plt.savefig(title, format="pdf")
+        plt.savefig(f"results/{exp_id}/{title}", format="pdf")
     plt.xticks(rotation=0)
     plt.yticks(rotation=0)
     plt.tight_layout()
     plt.show()
+
+# Function used to group triplets of concepts into a single cell string
+
+def group_triplets(arr):
+    grouped_cells = []
+    for i in range(0, len(arr), 3):
+        triplet = arr[i:i+3]
+        # Convert each 6-element list to a comma-separated string
+        triplet_strs = [','.join(map(str, row)) for row in triplet]
+        # Join the 3 lists with semicolons to make one cell string
+        cell_str = ';'.join(triplet_strs)
+        grouped_cells.append(cell_str)
+    return grouped_cells
 
 """Function used to compute the metrics"""
 
@@ -357,8 +370,8 @@ def compute_metrics(
 
     elif dataset_name in ["minikandinsky", "kandinsky", "clipkandinsky"]:
         # additional metrics for boia and sddoia
-        '''
-        collapse_color, collapse_hard_color = compute_concept_collapse(
+        
+        '''collapse_color, collapse_hard_color = compute_concept_collapse(
             true_concepts[:, 3:6].reshape(-1),
             predicted_concepts[:, 3:6].reshape(-1),
             False,
@@ -380,19 +393,19 @@ def compute_metrics(
         mean_collapse, mean_collapse_hard = np.mean(
             [collapse_color, collapse_shapes]
         ), np.mean([collapse_hard_color, collapse_hard_shapes])
+        
         '''
-
         collapse_color = compute_concept_collapse(
             true_concepts[:, 3:6].reshape(-1),
             predicted_concepts[:, 3:6].reshape(-1),
             False,
         )
-        collapse_shapes, collapse_hard_shapes = compute_concept_collapse(
+        collapse_shapes = compute_concept_collapse(
             true_concepts[:, :3].reshape(-1),
             predicted_concepts[:, :3].reshape(-1),
             False,
         )
-        mean_collapse, mean_collapse_hard = np.mean(
+        mean_collapse = np.mean(
             [collapse_color, collapse_shapes]
         )
 
@@ -525,23 +538,23 @@ def compute_metrics(
         )
     elif dataset_name in ["minikandinsky", "kandinsky", "clipkandinsky"]:
         metrics = KandMetrics(
-            concept_accuracy=concept_accuracy,
-            label_accuracy=label_accuracy,
-            concept_f1_macro=concept_f1_macro,
-            concept_f1_micro=concept_f1_micro,
-            concept_f1_weighted=concept_f1_weighted,
-            label_f1_macro=label_f1_macro,
-            label_f1_micro=label_f1_micro,
-            label_f1_weighted=label_f1_weighted,
-            collapse=collapse,
-            #collapse_hard=collapse_hard,
-            avg_nll=avg_nll,
+            concept_accuracy,
+            label_accuracy,
+            concept_f1_macro,
+            concept_f1_micro,
+            concept_f1_weighted,
+            label_f1_macro,
+            label_f1_micro,
+            label_f1_weighted,
+            collapse,
+            avg_nll,
+            #collapse_hard=None,
             collapse_shapes=collapse_shapes,
+            #collapse_hard_shapes=None,
             collapse_color=collapse_color,
-            #collapse_hard_shapes=collapse_hard_shapes,
-            #mean_collapse_hard=mean_collapse_hard,
+            #collapse_hard_color=None,
             mean_collapse=mean_collapse,
-            #collapse_hard_color=collapse_hard_color,
+            #mean_collapse_hard=None,
         )
     else:
         metrics = Metrics(
@@ -554,8 +567,8 @@ def compute_metrics(
             label_f1_micro=label_f1_micro,
             label_f1_weighted=label_f1_weighted,
             collapse=collapse,
-            #collapse_hard=collapse_hard,
             avg_nll=avg_nll,
+            #collapse_hard=None
         )
 
     if dataset_name in ["shortmnist"]:
@@ -601,7 +614,7 @@ def compute_metrics(
         plot_confusion_matrix(
             true_concepts,
             predicted_concepts,
-            classes=[i for i in range(10)],
+            classes=[i for i in range(3)],
             normalize=True,
             title=f"{model_name}_{dataset_name}_{seed}.pdf",
         )
@@ -655,7 +668,10 @@ def get_model(modelname, encoder, args):
     if modelname.lower() == "kandnn":
         return KANDnn(encoder=encoder, args=args)
     if modelname.lower() == "kanddpl":
-        return KandDPL(encoder=encoder, args=args)
+        if args.moco or args.moco_pretrained:
+            return KandDPL(encoder=model_moco.base_encoder, args=args, moco=args.moco, moco_pretrained=args.moco_pretrained)
+        else:
+            return KandDPL(encoder=encoder, args=args)
     if modelname.lower() == "kandcbm":
         return KandCBM(encoder=encoder, args=args)
     if modelname.lower() == "mnistdpl":
@@ -678,16 +694,18 @@ args = Namespace(
     validate=1,
     dataset="kandinsky",
     lr=0.001,
-    exp_decay=0.99,
+    exp_decay=0.9, #originally 0.99
     warmup_steps=1,
     wandb=None,
     task="patterns",
     boia_model='ce',
     model="kanddpl",
-    c_sup=1,
+    c_sup=0.5, #originally 1
     which_c=[-1],
     joint=False,
     boia_ood_knowledge=True,
+    moco=False,
+    moco_pretrained=True,
 )
 
 # get dataset
@@ -704,12 +722,17 @@ if hasattr(model, "encoder"):
 if hasattr(model, "net"):
     model.net.to(model.device)
 
-model
 
 """Define the seeds of the models"""
 
-seeds = [123, 456, 789, 1011, 1213, 1415, 1617, 1819, 2021, 2223]
-model_path = f"./best_model_{args.dataset}_{args.model}"
+seeds = [123, 456, 789, 1011, 1213]#, 1415, 1617, 1819, 2021, 2223]
+#exp_id = "mocopre_ep100_csup0_002"
+exp_id = "mocopre_ep100_csup0.5_001"
+#date time
+
+now = datetime.now()
+date_time = now.strftime("%Y-%m-%d_%H-%M-%S")
+model_path = f"variants/moco_pretrained/250621_100ep_0.5/best_model_{args.dataset}_{args.model}"
 
 """Loop through the dataset and retrive concepts and labels"""
 
@@ -846,7 +869,26 @@ def retrive_concepts_and_labels(model, dataset, dataset_name, is_ood=False):
 
     assert true_labels.shape == predicted_labels.shape
     assert true_concepts.shape == predicted_concepts.shape
+    
 
+    #save the concepts and labels as csv
+    # join each set of concepts, separated by commas
+    true_str = group_triplets(true_concepts)
+    pred_str = group_triplets(predicted_concepts)
+    # Create a DataFrame
+    df = pd.DataFrame({
+        'true_label': true_labels,
+        'predicted_label': predicted_labels,
+        'true_concept': true_str,
+        'predicted_concept': pred_str
+    })
+    os.makedirs(f'results/{exp_id}', exist_ok=True)
+    # Save to CSV
+    df.to_csv(f'results/{exp_id}/results_{exp_id}_{date_time}.csv', index=False)
+    print(f"Results saved to: results/{exp_id}/results_{exp_id}_{date_time}.csv")
+
+    
+    # return the true labels, predicted labels, true concepts, predicted concepts and average nll
     return true_labels, predicted_labels, true_concepts, predicted_concepts, avg_nll
 
 def evaluate_one(
@@ -885,7 +927,7 @@ def evaluate_one(
 
         model.eval()
 
-        true_labels, predicted_labels, true_concepts, predicted_concepts, avg_nll = retrive_concepts_and_labels(model, test_set, dataset_name)
+        ind_data = retrive_concepts_and_labels(model, test_set, dataset_name)
 
         if ood_set is not None:
             out_data = retrive_concepts_and_labels(
@@ -943,7 +985,6 @@ def evaluate(
         model.eval()
 
         ind_data = retrive_concepts_and_labels(model, test_set, dataset_name)
-
         if ood_set is not None:
             out_data = retrive_concepts_and_labels(
                 model, ood_set, dataset_name, is_ood=True
@@ -969,57 +1010,64 @@ def evaluate(
 
     assert n_files > 1, "At least 2 files to compare"
 
-    # Compute standard deviation for each metric
-    for key in vars(in_metrics_list[0]):  # the key are always the same
-        # skip hidden elements
-        if not key.startswith("_"):
-            # retrieve the list of values
-            in_metric_values = [getattr(metrics, key) for metrics in in_metrics_list]
-            ood_metric_values = [getattr(metrics, key) for metrics in ood_metrics_list]
-            ood_metric_2_values = [
-                getattr(metrics, key) for metrics in ood_metrics_2_list
-            ]
+    summary_path = f'results/{exp_id}/summary_{exp_id}_{date_time}.txt'
+    with open(summary_path, 'w') as f_summary:
+        f_summary.write("Evaluation Metrics Summary (LaTeX Style)\n")
+        f_summary.write("=" * 40 + "\n")
+    # Compute and save standard deviation for each metric
+        for key in vars(in_metrics_list[0]):  # the key are always the same
+            # skip hidden elements
+            if not key.startswith("_"):
+                # retrieve the list of values
+                in_metric_values = [getattr(metrics, key) for metrics in in_metrics_list]
+                ood_metric_values = [getattr(metrics, key) for metrics in ood_metrics_list]
+                ood_metric_2_values = [
+                    getattr(metrics, key) for metrics in ood_metrics_2_list
+                ]
+                
+                # convert lists to NumPy arrays
+                in_metric_values_arr = np.array(in_metric_values)
+                ood_metric_values_arr = np.array(ood_metric_values)
+                ood_metric_values_2_arr = np.array(ood_metric_2_values)
 
-            # convert lists to NumPy arrays
-            in_metric_values_arr = np.array(in_metric_values)
-            ood_metric_values_arr = np.array(ood_metric_values)
-            ood_metric_values_2_arr = np.array(ood_metric_2_values)
+                # Compute the standard deviation
+                in_metric_std_dev = np.std(in_metric_values_arr)
+                ood_metric_std_dev = np.std(ood_metric_values_arr)
+                ood_metric_2_std_dev = np.std(ood_metric_values_2_arr)
 
-            # Compute the standard deviation
-            in_metric_std_dev = np.std(in_metric_values_arr)
-            ood_metric_std_dev = np.std(ood_metric_values_arr)
-            ood_metric_2_std_dev = np.std(ood_metric_values_2_arr)
+                # Compute the mean
+                in_metric_std_mean = np.mean(in_metric_values_arr)
+                ood_metric_std_mean = np.mean(ood_metric_values_arr)
+                ood_metric_2_std_mean = np.mean(ood_metric_values_2_arr)
 
-            # Compute the mean
-            in_metric_std_mean = np.mean(in_metric_values_arr)
-            ood_metric_std_mean = np.mean(ood_metric_values_arr)
-            ood_metric_2_std_mean = np.mean(ood_metric_values_2_arr)
-
-            print(
-                "\n{} (In): ${:.2f} \pm {:.2f}$".format(
-                    key.replace("_", " ").title(),
-                    round(in_metric_std_mean, 2),
-                    round(in_metric_std_dev, 2),
-                )
-            )
-
-            if ood_set is not None:
-                print(
-                    "{} (OOD): ${:.2f} \pm {:.2f}$".format(
+                # Print the results
+                line_in = "\n{} (In): ${:.2f} \pm {:.2f}$".format(
                         key.replace("_", " ").title(),
-                        round(ood_metric_std_mean, 2),
-                        round(ood_metric_std_dev, 2),
+                        round(in_metric_std_mean, 2),
+                        round(in_metric_std_dev, 2),
                     )
-                )
+                print(line_in)
+                f_summary.write(line_in + "\n")
 
-            if ood_set_2 is not None:
-                print(
-                    "{} (OOD 2): ${:.2f} \pm {:.2f}$".format(
-                        key.replace("_", " ").title(),
-                        round(ood_metric_2_std_mean, 2),
-                        round(ood_metric_2_std_dev, 2),
-                    )
-                )
+                if ood_set is not None:
+                    line_ood = "{} (OOD): ${:.2f} \pm {:.2f}$".format(
+                            key.replace("_", " ").title(),
+                            round(ood_metric_std_mean, 2),
+                            round(ood_metric_std_dev, 2),
+                        )
+                    print(line_ood)
+                    f_summary.write(line_ood + "\n")
+
+                if ood_set_2 is not None:
+                    line_ood2 = "{} (OOD 2): ${:.2f} \pm {:.2f}$".format(
+                            key.replace("_", " ").title(),
+                            round(ood_metric_2_std_mean, 2),
+                            round(ood_metric_2_std_dev, 2),
+                        )
+                    print(line_ood2)
+                    f_summary.write(line_ood2 + "\n")
+    
+    print(f"Summary saved to {summary_path}")
 
 """Run all the things
 
@@ -1098,29 +1146,8 @@ for a, b in zip(filenames, folders):
 !python main.py --dataset shortmnist --model mnistdpl --n_epochs 10 --lr 0.001 --seed 1213 \
     --batch_size 256 --exp_decay 0.99 --c_sup 1 --task addition --backbone conceptizer'''
 
-seeds = [123, 456, 789, 1011, 1213, 1415, 1617, 1819, 2021, 2223]
+seeds = [123, 456, 789, 1011, 1213]#, 1415, 1617, 1819, 2021, 2223]
 
-#spit out 1 example
-args = Namespace(
-    backbone="conceptizer",
-    preprocess=0,
-    finetuning=0,
-    batch_size=256,
-    n_epochs=20,
-    validate=1,
-    dataset="Kandinsky",
-    lr=0.001,
-    exp_decay=0.99,
-    warmup_steps=1,
-    wandb=None,
-    task="patterns",
-    boia_model='ce',
-    model="kanddpl",
-    c_sup=1,
-    which_c=[-1],
-    joint=False,
-    boia_ood_knowledge=True,
-)
 
 # Get loaders
 train_loader, val_loader, test_loader = dataset.get_data_loaders()
@@ -1137,16 +1164,6 @@ evaluate(
     ood_set=ood_loader,
     ood_set_2=None,
 )
-
-"""# Transfer learning
-
-SVHN to identify numbers
-
-transfer to mnist even-odd add
-"""
-
-# concatenate SVHN into 28*2 x 28 pictures?
-# generate y label: a, b
 
 def train(model, train_loader, criterion, optimizer, concept_criterion=None, num_epochs=10, concept_loss_weight=1):
     print(">## TRAIN ##")

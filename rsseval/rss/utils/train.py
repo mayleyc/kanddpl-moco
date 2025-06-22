@@ -478,6 +478,7 @@ def train(model: MnistDPL, dataset: BaseDataset, _loss: ADDMNIST_DPL, args):
             wandb.log({"accuracy": yacc})
             wandb.log({"f1": f1})
             wandb.log({"cacc": cacc})
+            
 
         ### LOGGING ###
         fprint("  ACC C", cacc, "  ACC Y", yacc, "F1 Y", f1)

@@ -292,3 +292,4 @@ class KandDPL(DeepProblogModel):
         super().to(device)
         self.w_q = self.w_q.to(device)
         self.and_rule = self.and_rule.to(device)
+        

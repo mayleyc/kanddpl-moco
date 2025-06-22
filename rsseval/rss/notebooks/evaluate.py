@@ -1097,7 +1097,7 @@ python main.py --dataset kandinsky --model kanddpl --n_epochs 10 --lr 0.001 --se
 !python main.py --dataset shortmnist --model mnistdpl --n_epochs 10 --lr 0.001 --seed 1213 \
     --batch_size 256 --exp_decay 0.99 --c_sup 1 --task addition --backbone conceptizer'''
 
-seeds = [123, 456, 789, 1011, 1213, 1415, 1617, 1819, 2021, 2223]
+seeds = [123, 456, 789, 1011, 1213] #, 1415, 1617, 1819, 2021, 2223]
 
 #spit out 1 example
 args = Namespace(
@@ -1107,14 +1107,14 @@ args = Namespace(
     batch_size=256,
     n_epochs=20,
     validate=1,
-    dataset="shortmnist",
+    dataset="kandinsky",
     lr=0.001,
     exp_decay=0.99,
     warmup_steps=1,
     wandb=None,
     task="patterns",
     boia_model='ce',
-    model="mnistdpl",
+    model="kanddpl",
     c_sup=1,
     which_c=[-1],
     joint=False,

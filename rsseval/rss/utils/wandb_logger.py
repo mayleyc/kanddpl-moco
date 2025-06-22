@@ -40,7 +40,7 @@ def wandb_log_epoch(**kwargs):
     wandb.log({"test-loss": tloss})
 
 
-def wand_log_end(t_acc, t_c_acc):
+def wandb_log_end(t_acc, t_c_acc):
     """Wandb log epoch metrics on the test set: accuracy on labels and on concepts
     Args:
         kwargs: key-value dictionary with metrics
