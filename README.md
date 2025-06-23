@@ -21,6 +21,7 @@ Most changes made are in ```rsseval/rss```.
 - New tools were also created in the main folder for .joblib file viewing and training with bash.
 
 ## How to Use (simple)
+- Change your current directory to ```rsseval```. Set up a new conda environment with ```conda create -n rsbench python=3.8```, then activate this env and install the requirements through ```pip install -r requirements.txt```.
 - Download and unzip the Kand-Logic dataset into the ```data``` folder.
 - Change your directory to ```rss``` and run the bash file via ```./train_seeds.sh```. The best model from each of the 5 seeds will be saved in the main folder.
 - Replace the filepaths in ```evaluate.py``` with your actual filepaths. Make sure to change the project name, entity, c_sup and other flags such as --moco (for running a randomly initialized MoCo-ViT) and --moco-pretrained (MoCo-ViT with weights loaded). Only one of these MoCo flags can be used at once (omit to run without MoCo). Run ```python evaluate.py``` to evaluate all 5 best models. The means and SDs of the metrics will be available in a .txt file.
