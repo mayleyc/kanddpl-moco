@@ -17,8 +17,13 @@ Most changes made are in ```rsseval/rss```.
 - **`backbones`**: Added main_moco.py, vits.py, the moco folder and model weights for the MoCo-ViT encoder. Changes have been made to the vits.py file compared to the codebase at [link](https://github.com/facebookresearch/moco-v3) to accommodate DPL-compatible image encoding.
 - **`data`**: For the dataset, please follow the instructions at [link](https://unitn-sml.github.io/rsbench/) to download the original Kand-Logic dataset. A custom dataset can be generated, but the concepts annotated do not match the format required by the current implementation.
 - **`datasets`**: Most changes occur in ```kandinsky.py``` to implement the MoCo-ViT encoder.
+- **`models`**, **`utils`** and ```main.py```: Same as above for files ```kanddpl.py``` and ```args.py```
+- New tools were also created in the main folder for .joblib file viewing and training with bash.
+
+## How to Use
+- Download and unzip the Kand-Logic dataset into the ```data``` folder.
 - 
-- 
+
 ## Website
 
 For more info, go to the dedicated website for rsbench: [link](https://unitn-sml.github.io/rsbench/).
