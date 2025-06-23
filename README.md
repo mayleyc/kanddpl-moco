@@ -22,7 +22,7 @@ Most changes made are in ```rsseval/rss```.
 
 ## How to Use (simple)
 - Download and unzip the Kand-Logic dataset into the ```data``` folder.
-- Change your directory to ```rss``` and run the bash file via ```./train_seeds.sh```. THe best model from each of the 5 seeds will be saved in the main folder.
+- Change your directory to ```rss``` and run the bash file via ```./train_seeds.sh```. The best model from each of the 5 seeds will be saved in the main folder.
 - Replace the filepaths in ```evaluate.py``` with your actual filepaths. Make sure to change the project name, entity, c_sup and other flags such as --moco (for running a randomly initialized MoCo-ViT) and --moco-pretrained (MoCo-ViT with weights loaded). Only one of these MoCo flags can be used at once (omit to run without MoCo). Run ```python evaluate.py``` to evaluate all 5 best models. The means and SDs of the metrics will be available in a .txt file.
 - The confusion matrices shown in the paper are taken from the training results of the last seed. (The confusion matrices in the evaluation results are not separated by color and shape.)
 
