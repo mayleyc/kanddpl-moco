@@ -11,8 +11,14 @@ This is the codebase for the report: "MoCoDPL - The impact of self-supervision o
   
 - **`rssgen`**: Generate datasets designed to study and analyze RSs effectively.
 
-Each component is designed to help you systematically assess and understand RSs in various machine learning models.
+Most changes made are in ```rsseval/rss```.
 
+## List of Changes
+- **`backbones`**: Added main_moco.py, vits.py, the moco folder and model weights for the MoCo-ViT encoder. Changes have been made to the vits.py file compared to the codebase at [link](https://github.com/facebookresearch/moco-v3) to accommodate DPL-compatible image encoding.
+- **`data`**: For the dataset, please follow the instructions at [link](https://unitn-sml.github.io/rsbench/) to download the original Kand-Logic dataset. A custom dataset can be generated, but the concepts annotated do not match the format required by the current implementation.
+- **`datasets`**: Most changes occur in ```kandinsky.py``` to implement the MoCo-ViT encoder.
+- 
+- 
 ## Website
 
-For more info, go to the dedicated website: [link](https://unitn-sml.github.io/rsbench/).
+For more info, go to the dedicated website for rsbench: [link](https://unitn-sml.github.io/rsbench/).
