@@ -1,6 +1,7 @@
 # RSbench
 
-This is the official codebase for ["A Neuro-Symbolic Benchmark Suite for Concept Quality and Reasoning Shortcuts"](https://arxiv.org/abs/2406.10368) paper, [NeurIPS 2024](https://neurips.cc/Conferences/2024/). This suite provides tools to evaluate and generate datasets focused on [Reasoning Shortcuts (RSs)](https://arxiv.org/abs/2305.19951) .
+This is the codebase for the report: "MoCoDPL - The impact of self-supervision on neuro-symbolic learning", largely influenced by ["A Neuro-Symbolic Benchmark Suite for Concept Quality and Reasoning Shortcuts"](https://arxiv.org/abs/2406.10368) and ["An Empirical Study of Training Self-Supervised Vision Transformers
+"](https://arxiv.org/abs/2104.02057) papers. The project added a pipeline for self-supervision to the original DPL neuro-symbolic model by replacing its convolutional encoder with MoCo-ViT. A pretrained version can be loaded by using the flag ```--moco-pretrained```. The pretrained encoder is trained for 1000 epochs on the Kand-Logic dataset itself (not transfer learning).
 
 ## Content Overview
 
